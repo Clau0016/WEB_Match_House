@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabase } from "@/integrations/supabase/client";
 
-export const db = supabase as unknown as SupabaseClient;
+export const db = new Proxy({} as SupabaseClient, {
+  get(_target, key) {
+    const client = getSupabase();
+    const value: unknown = Reflect.get(client, key);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
 export const euro = (value: number) => new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value);
 export const errorText = (error: unknown) => error && typeof error === "object" && "message" in error ? String(error.message) : "Operazione non riuscita. Riprova.";
 export const verified = (session: Session | null) => Boolean(session?.user.email_confirmed_at);

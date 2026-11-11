@@ -1,6 +1,6 @@
 # Match House MVP web
 
-La specifica principale è il documento **match house mvp sitoweb.docx**. Il codice mantiene TanStack Start, React, Vite e Supabase dell’export Lovable.
+La specifica principale è il documento **match house mvp sitoweb.docx**. Il sito usa TanStack Start, React, Vite e Supabase.
 
 - [Guida funzionale e test prima del lancio](PROMPT_FUNZIONALE.md)
 - [Guida tecnica e prossimi passi](PROMPT_TECNICO.md)
@@ -9,7 +9,7 @@ La specifica principale è il documento **match house mvp sitoweb.docx**. Il cod
 
 1. Installa le dipendenze con `npm install` usando Node.js 22 o successivo.
 2. Copia `.env.example` in `.env.local`. Inserisci l’URL del progetto e la chiave pubblicabile Supabase. Le chiavi privilegiate vanno conservate sul server.
-3. Esegui una volta [database/mvp.sql](database/mvp.sql) nel SQL Editor del progetto Supabase. Lo script crea tabelle MVP, funzioni, permessi e bucket privati. Usa nomi con prefisso `mh_` per affiancare eventuali tabelle Lovable preesistenti.
+3. Esegui una volta [database/mvp.sql](database/mvp.sql) nel SQL Editor di un progetto che non ha ancora lo schema. Lo script crea tabelle MVP con prefisso `mh_`, funzioni, permessi e bucket privati.
 4. In Supabase Auth abilita la conferma email e configura gli URL di redirect verso `/account` e `/accesso?mode=update` per il dominio del sito e per l’origine locale utilizzata.
 5. Avvia con `npm run dev`. Usa `npm test` per il controllo delle rotte e `npm run build` per la build di produzione.
 
