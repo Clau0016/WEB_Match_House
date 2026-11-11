@@ -1,6 +1,9 @@
 # Match House MVP web
 
-La specifica principale è il documento **match house mvp sitoweb.docx**. I prompt Markdown precedenti forniscono contesto tecnico. Il codice mantiene TanStack Start, React, Vite e Supabase dell’export Lovable.
+La specifica principale è il documento **match house mvp sitoweb.docx**. Il codice mantiene TanStack Start, React, Vite e Supabase dell’export Lovable.
+
+- [Guida funzionale e test prima del lancio](PROMPT_FUNZIONALE.md)
+- [Guida tecnica e prossimi passi](PROMPT_TECNICO.md)
 
 ## Avvio locale
 
