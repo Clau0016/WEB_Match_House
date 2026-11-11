@@ -6,10 +6,19 @@ import { checked, db } from "@/components/web/data";
 import { amenities, ListingCard, types, type Listing } from "@/components/web/listings";
 import { normalized } from "@/components/web/questionnaire";
 
-export const Route = createFileRoute("/trova-casa")({ component: Finder });
+export const Route = createFileRoute("/trova-casa")({
+  validateSearch: (search): { city?: string } =>
+    typeof search["city"] === "string" && search["city"].trim() ? { city: search["city"].trim().slice(0, 80) } : {},
+  component: Finder,
+});
 function Finder() {
+  const { city } = Route.useSearch();
+  return <FinderContent key={city ?? ""} initialCity={city ?? ""} />;
+}
+
+function FinderContent({ initialCity }: { initialCity: string }) {
   const state = useLoad(async () => await checked(db.from("mh_public_listings").select("*").order("created_at", { ascending: false })) as Listing[], "public");
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<Record<string, string>>({ city: initialCity });
   const set = (key: string, value: string) => setFilters((old) => ({ ...old, [key]: value }));
   const results = (state.data ?? []).filter((item) =>
     (!filters["city"] || normalized(item.city).includes(normalized(filters["city"]))) &&
@@ -28,8 +37,8 @@ function Finder() {
       <Field label="Dotazione"><select value={filters["amenity"] ?? ""} onChange={(e) => set("amenity", e.target.value)}><option value="">Qualsiasi</option>{amenities.map((amenity) => <option key={amenity}>{amenity}</option>)}</select></Field>
     </form>
     {state.error ? <Empty>Impossibile caricare gli annunci. {state.error}</Empty> : state.data === undefined ? <Empty>Caricamento…</Empty> : <>
-      <p className="mh-count">{results.length} {results.length === 1 ? "annuncio" : "annunci"}</p>
-      {results.length ? <div className="mh-listings">{results.map((listing) => <ListingCard listing={listing} key={listing.id} />)}</div> : <Empty>Nessun annuncio verificato corrisponde ai filtri.</Empty>}
+      <div className="mh-result-bar"><p className="mh-count" aria-live="polite">{results.length} {results.length === 1 ? "annuncio" : "annunci"}</p>{Object.values(filters).some(Boolean) && <button type="button" className="mh-text-link" onClick={() => setFilters({})}>Azzera filtri</button>}</div>
+      {results.length ? <div className="mh-listings">{results.map((listing) => <ListingCard listing={listing} key={listing.id} />)}</div> : <Empty>Nessun annuncio corrisponde ai filtri.</Empty>}
     </>}
   </div>;
 }
