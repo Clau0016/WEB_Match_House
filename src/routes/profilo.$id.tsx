@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Empty, Field, PageTitle, RequireAccount, useLoad } from "@/components/web/common";
 import { checked, db, errorText, euro, useSession, verified } from "@/components/web/data";
-import { MediaImage } from "@/components/web/media";
+import { isDemoProfile, MediaImage } from "@/components/web/media";
 import { questions } from "@/components/web/questionnaire";
 import type { Ranked } from "./risultati";
 
@@ -43,7 +43,7 @@ function Profile() {
         <p>Budget {euro(Number(person.answers["minimum"]))}–{euro(Number(person.answers["maximum"]))}/mese. Ingresso dal {person.answers["move"]}.</p>
         {person.show_details && <dl className="mh-facts">{questions.filter(({ id: key }) => ["schedule","clean","noise","social","interests","area","stay","languages","home","remote","chores","guests","smoke","pets","sports"].includes(key)).map(({ id: key, label }) => <div key={key}><dt>{label}</dt><dd>{Array.isArray(person.answers[key]) ? person.answers[key].join(", ") : person.answers[key] || "—"}</dd></div>)}</dl>}
       </div>
-      <form className="mh-panel mh-section mh-form" onSubmit={send}><h2>Contatta questa persona</h2><Field label="Messaggio"><textarea name="message" maxLength={1000} required /></Field><button className="mh-button" disabled={busy || status === "Richiesta di contatto inviata."}>Invia richiesta</button>{status && <p role="status">{status}</p>}</form>
+      {isDemoProfile(id) ? <p className="mh-panel mh-section">Questo profilo è fittizio e non riceve messaggi.</p> : <form className="mh-panel mh-section mh-form" onSubmit={send}><h2>Contatta questa persona</h2><Field label="Messaggio"><textarea name="message" maxLength={1000} required /></Field><button className="mh-button" disabled={busy || status === "Richiesta di contatto inviata."}>Invia richiesta</button>{status && <p role="status">{status}</p>}</form>}
       <details className="mh-panel mh-section"><summary>Segnala profilo</summary><form className="mh-form" onSubmit={report}><Field label="Motivo"><textarea name="reason" required maxLength={1000} /></Field><button className="mh-button mh-outline" disabled={busy}>Invia segnalazione</button>{reportStatus && <p role="status">{reportStatus}</p>}</form></details>
     </>}
   </div>;

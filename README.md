@@ -19,7 +19,7 @@ Dopo aver registrato e verificato il primo account amministratore, aggiungi il s
 
 ## Dati e configurazione per la messa online
 
-- Il sito parte senza annunci e profili di esempio. La fotografia della homepage ha funzione illustrativa.
+- Per popolare una demo, esegui [database/demo.sql](database/demo.sql) dopo lo schema MVP. Crea quattro annunci di esempio e tre profili fittizi senza accesso. Gli annunci compaiono in **Trova casa**, i profili nei risultati del questionario. Foto e prezzi sono dimostrativi.
 - I pesi del matching si configurano nella funzione `mh_rank_roommates`. Città, budget e data di ingresso valgono insieme 60 punti su 100. I dettagli facoltativi vengono filtrati dal database.
 - Le richieste di finanziamento compaiono nel pannello amministrativo. La simulazione calcola la rata usando il tasso ipotetico inserito dall’utente.
 - Prima di aprire le registrazioni al pubblico, completa i testi legali con i dati del titolare e i contatti ufficiali, configura la posta transazionale e verifica gli accessi usando account di prova sul progetto Supabase di destinazione.

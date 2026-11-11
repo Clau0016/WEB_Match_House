@@ -6,7 +6,7 @@ import { MediaImage } from "./media";
 
 export const types = ["Stanza singola", "Stanza doppia", "Appartamento"];
 export const amenities = ["Letto", "Armadio", "Scrivania", "Cucina attrezzata", "Frigorifero", "Lavatrice", "Lavastoviglie", "Forno", "Aria condizionata", "Riscaldamento", "Wi-Fi"];
-export const labels = { draft: "Bozza", pending: "Da verificare", approved: "Verificato", rejected: "Non approvato", inactive: "Disattivato" };
+export const labels = { draft: "Bozza", pending: "Da verificare", approved: "Verificato", rejected: "Non approvato", inactive: "Disattivato", demo: "Annuncio di esempio" };
 export type Listing = {
   id: string; owner_id: string; title: string; city: string; area: string; address: string; rent: number; type: string; size: number;
   rooms: number; roommates: number; available: string; amenities: string[]; photos: string[]; documents: string[];
@@ -29,7 +29,7 @@ const requiredDetail = new Set(["floor", "bathrooms", "fees", "deposit", "contra
 export function ListingCard({ listing }: { listing: Listing }) {
   return <Link to="/annuncio/$id" params={{ id: listing.id }} className="mh-panel mh-listing-card">
     <MediaImage path={listing.photos[0] ?? null} alt={listing.title} className="mh-listing-photo" />
-    <div className="mh-listing-body"><span className="mh-badge">✓ {labels.approved}</span><h2>{listing.title}</h2><p className="mh-muted">{listing.city} · {listing.area}</p><strong>{euro(listing.rent)}/mese</strong><p>{listing.type} · {listing.size} m²</p><p>{listing.rooms} stanze disponibili · {listing.roommates} coinquilini</p></div>
+    <div className="mh-listing-body"><span className="mh-badge">{listing.status === "approved" && "✓ "}{labels[listing.status]}</span><h2>{listing.title}</h2><p className="mh-muted">{listing.city} · {listing.area}</p><strong>{euro(listing.rent)}/mese</strong><p>{listing.type} · {listing.size} m²</p><p>{listing.rooms} stanze disponibili · {listing.roommates} coinquilini</p></div>
   </Link>;
 }
 
