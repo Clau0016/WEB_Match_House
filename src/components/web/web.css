@@ -37,6 +37,8 @@
 .mh-footer-inner p, .mh-footer-inner nav { color: var(--mh-muted); font-size: .85rem; margin-top: 8px; }
 .mh-footer-inner nav { display: flex; flex-wrap: wrap; gap: 14px; }
 .mh-footer a:hover { text-decoration: underline; }
+.mh-analytics { position: fixed; z-index: 30; inset: auto 14px 14px auto; width: min(420px, calc(100% - 28px)); box-shadow: 0 8px 30px #19211d20; }
+.mh-analytics p { margin-bottom: 14px; }
 .mh-page { padding-block: 46px 65px; }
 .mh-page-title h1 { font-size: clamp(2.6rem, 5.3vw, 4.7rem); line-height: 1.02; text-wrap: pretty; margin-bottom: 13px; }
 .mh-page-title { margin-bottom: 21px; }

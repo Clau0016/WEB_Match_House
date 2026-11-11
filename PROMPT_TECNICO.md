@@ -16,11 +16,21 @@ L’app usa React, TanStack Start e Vite. Supabase gestisce autenticazione, Post
 - La ricerca pubblica legge la vista `mh_public_listings`, che espone gli annunci approvati dei proprietari attivi.
 - Il punteggio si calcola in PostgreSQL con `mh_rank_roommates`. Città, budget e data di ingresso pesano 60 punti su 100. La funzione controlla profilo attivo, email confermata e visibilità prima di restituire i risultati.
 - Le policy RLS regolano le operazioni per proprietari, utenti verificati e amministratori. Foto e documenti usano bucket privati con URL firmati.
-- L’anteprima dell’export Lovable era configurata per il progetto `zinmrniycuyprmpekelm`. Verifica che sia il progetto di destinazione prima di applicare lo schema. Il file `.env_locale` del vecchio stack non configura il client Supabase di questo MVP.
+- Il progetto Supabase della demo è `rsdjlwwewwepbyekbant` (Match_House, Francoforte). La vista pubblica e Supabase Auth rispondono all’API. Il file `.env_locale` del vecchio stack non configura il client Supabase di questo MVP.
 
-## Prossimi passi
+## Google Analytics 4
 
-1. Accedere al progetto Supabase di destinazione, verificare lo schema e completare Auth, posta transazionale e account amministratore.
-2. Eseguire i [test funzionali](PROMPT_FUNZIONALE.md#verifica-prima-del-lancio) con due utenti verificati e un amministratore. Verificare anche il rifiuto delle operazioni riservate quando si accede come utente normale.
-3. Ripristinare l’autenticazione GitHub per `Clau0016/WEB_Match_House` e inviare i commit su `main`. Il precedente tentativo di push è stato respinto da GitHub per autenticazione.
-4. Configurare l’hosting, impostare le variabili Supabase nell’ambiente di build e aggiungere il dominio pubblico ai redirect Auth. Verificare i flussi sul dominio pubblicato prima di aprire le registrazioni.
+1. Crea una proprietà GA4 e un flusso di dati **Web** con l’URL pubblico del Worker. Copia l’ID di misurazione `G-…`.
+2. Disattiva **Misurazione avanzata** nel flusso. L’app invia le visualizzazioni delle sezioni pubbliche e gestisce le transizioni del router. Le visualizzazioni automatiche basate sulla cronologia possono duplicarle. [Documentazione Google sulle visualizzazioni](https://developers.google.com/analytics/devguides/collection/ga4/views)
+3. Aggiungi `VITE_GA_MEASUREMENT_ID` in **Cloudflare → Settings → Builds → Variables and secrets** e avvia una nuova build. Per una verifica locale usa la stessa variabile in `.env.local` e riavvia Vite.
+4. Apri il sito in una finestra privata. Verifica che la richiesta al tag parta solo dopo **Accetta**, poi apri **Trova casa** e **Acquista casa**. Controlla in GA4 **In tempo reale** che le visite arrivino. Rifiuta dal footer e verifica che le nuove visite non vengano inviate.
+
+Il tag resta disattivato finché l’ID è assente. Il codice invia `page_view` per home, ricerca, introduzione coinquilini, acquisto e informazioni. Usa URL di pagina senza parametri, frammenti o identificativi di profilo. Nei report, controlla utenti attivi, sessioni e visualizzazioni per pagina. I conteggi GA4 riflettono le visite misurabili dopo il consenso.
+
+## Prossimi passi per la demo ufficiale
+
+1. In Cloudflare apri il Worker **web-match-house**. Verifica che il repository `Clau0016/WEB_Match_House` sia collegato a `main` e che le variabili di build `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` puntino al progetto Match_House. I comandi del Worker sono `bun run build` e `npx wrangler deploy`.
+2. Con **Deployments → Build → Retry build**, rigenera il Worker dopo ogni modifica alle variabili. Quando è **Ready**, copia il link pubblico da **Visit** e verifica **Trova casa**.
+3. In Supabase Auth, imposta il link pubblico come **Site URL** e autorizza gli URL completi per `/account` e `/accesso?mode=update`. Configura la posta transazionale e assegna il ruolo amministratore al primo account verificato.
+4. Esegui i [test funzionali](PROMPT_FUNZIONALE.md#verifica-prima-del-lancio) sul dominio pubblico con due utenti verificati e un amministratore. Controlla moderazione, visibilità e caricamento delle foto su desktop e smartphone.
+5. Configura GA4 e verifica il primo evento. Completa informativa, preferenze statistiche e recapiti. Condividi il link pubblico dopo aver verificato registrazione, ricerca e recupero password sul dominio della demo.

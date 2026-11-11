@@ -19,5 +19,7 @@ La specifica di riferimento è **match house mvp sitoweb.docx**.
 - Creare un annuncio, verificare che sia assente dalla ricerca prima dell’approvazione e pubblicarlo da un account amministratore. Provare salvataggio, segnalazione e disattivazione.
 - Provare il calcolatore con tasso positivo e con tasso zero. Controllare che una richiesta di finanziamento arrivi all’amministrazione.
 - Provare il sito su desktop e smartphone. Approvare i testi legali e inserire i recapiti ufficiali prima di aprire le registrazioni al pubblico.
+- Preparare almeno un annuncio approvato con foto utilizzabili e, se si vuole mostrare il matching, due profili demo chiaramente identificati e creati con il consenso delle persone coinvolte. Usare solo documenti di prova autorizzati nel flusso di moderazione.
+- Con GA4 configurato, provare **Rifiuta**, **Accetta** e la modifica della scelta da **Preferenze statistiche** nel footer. Controllare che le visite consensuali alle sezioni pubbliche compaiano nel report In tempo reale.
 
 Per avvio, database e pubblicazione consulta la [guida tecnica](PROMPT_TECNICO.md).

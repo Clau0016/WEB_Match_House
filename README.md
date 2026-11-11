@@ -23,3 +23,7 @@ Dopo aver registrato e verificato il primo account amministratore, aggiungi il s
 - I pesi del matching si configurano nella funzione `mh_rank_roommates`. Città, budget e data di ingresso valgono insieme 60 punti su 100. I dettagli facoltativi vengono filtrati dal database.
 - Le richieste di finanziamento compaiono nel pannello amministrativo. La simulazione calcola la rata usando il tasso ipotetico inserito dall’utente.
 - Prima di aprire le registrazioni al pubblico, completa i testi legali con i dati del titolare e i contatti ufficiali, configura la posta transazionale e verifica gli accessi usando account di prova sul progetto Supabase di destinazione.
+
+## Demo pubblica su Cloudflare
+
+Il Worker `web-match-house` usa il branch `main` di GitHub. La procedura per configurare Supabase, abilitare Google Analytics 4 e verificare il sito prima di condividere il link è nella [guida tecnica](PROMPT_TECNICO.md#prossimi-passi-per-la-demo-ufficiale).

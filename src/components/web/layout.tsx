@@ -1,6 +1,7 @@
 import { Link, Outlet } from "@tanstack/react-router";
 import { House } from "lucide-react";
 import { useSession } from "./data";
+import { Analytics } from "./analytics";
 
 export function Brand() {
   return <Link className="mh-brand" to="/"><span><House size={19} /></span>Match<span className="mh-brand-word">House</span></Link>;
@@ -26,6 +27,7 @@ export function Layout() {
     <footer className="mh-footer"><div className="mh-wrap mh-footer-inner">
       <div><Brand /><p>Trova la casa giusta. Trova le persone giuste.</p></div>
       <nav aria-label="Informazioni">{Object.entries({ "chi-siamo": "Chi siamo", contatti: "Contatti", termini: "Termini e condizioni", privacy: "Privacy Policy", cookie: "Cookie Policy", faq: "FAQ" }).map(([hash, label]) => <Link key={hash} to="/informazioni" hash={hash}>{label}</Link>)}</nav>
+      <Analytics />
     </div></footer>
   </div>;
 }
