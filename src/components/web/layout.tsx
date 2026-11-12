@@ -1,6 +1,7 @@
 import { Link, Outlet } from "@tanstack/react-router";
 import { House } from "lucide-react";
-import { useSession } from "./data";
+import { useSession, verified } from "./data";
+import { ChatNav } from "./chat";
 import { Analytics } from "./analytics";
 
 export function Brand() {
@@ -15,7 +16,7 @@ export function Layout() {
       <nav aria-label="Navigazione principale">
         <Link to="/" activeOptions={{ exact: true }}>Home</Link>
         <Link to="/trova-casa">Trova casa</Link>
-        <Link to="/coinquilini">Trova coinquilini</Link>
+        {session && verified(session) ? <ChatNav key={session.user.id} userId={session.user.id} /> : <Link to="/coinquilini">Trova coinquilini</Link>}
         <Link to="/acquista">Acquista casa</Link>
       </nav>
       <div className="mh-auth">{session ? <Link className="mh-button" to="/account">Area personale</Link> : <>

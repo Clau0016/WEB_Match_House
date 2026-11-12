@@ -13,7 +13,7 @@ La specifica principale è il documento **match house mvp sitoweb.docx**. Il sit
 4. In Supabase Auth abilita la conferma email e configura gli URL di redirect verso `/account` e `/accesso?mode=update` per il dominio del sito e per l’origine locale utilizzata.
 5. Avvia con `npm run dev`. Usa `npm test` per il controllo delle rotte e `npm run build` per la build di produzione.
 
-Per abilitare le conversazioni tra coinquilini, esegui [database/chat.sql](database/chat.sql) nel SQL Editor dopo lo schema MVP. La migrazione recupera le richieste di contatto esistenti e abilita gli aggiornamenti dei messaggi tramite Supabase Realtime.
+Per abilitare le conversazioni tra coinquilini, esegui [database/chat.sql](database/chat.sql) e poi [database/chat-unread.sql](database/chat-unread.sql) nel SQL Editor dopo lo schema MVP. Le migrazioni recuperano le richieste di contatto esistenti, abilitano gli aggiornamenti tramite Supabase Realtime e aggiungono il conteggio dei non letti.
 
 ## Amministrazione
 

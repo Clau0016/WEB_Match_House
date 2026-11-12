@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Send } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { Empty, Field, PageTitle, RequireAccount } from "@/components/web/common";
+import { Empty, RequireAccount } from "@/components/web/common";
 import { useChatFeed } from "@/components/web/chat";
 import { checked, db, errorText, useSession, verified } from "@/components/web/data";
 
 export const Route = createFileRoute("/coinquilini_/chat/$id")({ component: ChatPage });
-type Message = { id: string; sender_id: string; message: string; created_at: string };
+type Message = { id: string; sender_id: string; message: string; created_at: string; read_at: string | null };
 
 function ChatPage() {
   const { id } = Route.useParams();
@@ -29,7 +30,7 @@ function Conversation({ userId, person }: { userId: string; person: string }) {
     const [name, canSend, messages] = await Promise.all([
       checked(db.rpc("mh_chat_name", { person })),
       checked(db.rpc("mh_chat_can_send", { person })),
-      checked(db.from("mh_contacts").select("id,sender_id,message,created_at")
+      checked(db.from("mh_contacts").select("id,sender_id,message,created_at,read_at")
         .or(`and(sender_id.eq.${userId},recipient_id.eq.${person}),and(sender_id.eq.${person},recipient_id.eq.${userId})`)
         .order("created_at", { ascending: false }).order("id", { ascending: false }).limit(limit)),
     ]);
@@ -38,6 +39,19 @@ function Conversation({ userId, person }: { userId: string; person: string }) {
   const { data, error, reload } = useChatFeed(userId, load);
   const latestMessage = data?.messages.at(-1)?.id;
   useEffect(() => { if (latestMessage) end.current?.scrollIntoView({ block: "nearest" }); }, [latestMessage]);
+
+  useEffect(() => {
+    const unread = data?.messages.filter((message) => message.sender_id === person && !message.read_at).map((message) => message.id);
+    if (!unread?.length) return;
+    const markRead = () => {
+      if (!document.hidden) {
+        void checked(db.rpc("mh_chat_mark_read", { person, message_ids: unread })).catch(() => {});
+      }
+    };
+    markRead();
+    document.addEventListener("visibilitychange", markRead);
+    return () => document.removeEventListener("visibilitychange", markRead);
+  }, [data?.messages, person]);
 
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,21 +68,24 @@ function Conversation({ userId, person }: { userId: string; person: string }) {
   }
 
   if (!data) return <Empty>{error ?? (data === null ? "Conversazione non disponibile." : "Caricamento…")}</Empty>;
-  return <section className="mh-panel mh-section">
-    <PageTitle title={data.name} />
+  return <section className="mh-panel mh-section mh-conversation">
+    <header className="mh-chat-heading">
+      <span className="mh-chat-avatar" aria-hidden="true">{data.name.trim().slice(0, 1).toUpperCase()}</span>
+      <h1>{data.name}</h1>
+    </header>
     {error && <p role="status">Aggiornamento della chat in corso. {error}</p>}
     <div className="mh-chat-log" role="log" aria-label="Messaggi">
       {data.messages.length === limit && limit < 1000 && <button type="button" className="mh-text-link" onClick={() => setLimit((current) => Math.min(current + 60, 1000))}>Messaggi precedenti</button>}
       {!data.messages.length && <p>Scrivi il primo messaggio.</p>}
       {data.messages.map((message) => <article key={message.id} className={message.sender_id === userId ? "mh-chat-message mh-chat-mine" : "mh-chat-message"}>
         <p className="mh-preserve">{message.message}</p>
-        <small>{message.sender_id === userId ? "Tu" : data.name} · <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" })}</time></small>
+        <small><time dateTime={message.created_at}>{new Date(message.created_at).toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" })}</time></small>
       </article>)}
       <div ref={end} />
     </div>
-    {data.canSend ? <form className="mh-form" onSubmit={send}>
-      <Field label="Messaggio"><textarea rows={2} maxLength={1000} value={draft} onChange={(event) => setDraft(event.target.value)} disabled={busy} required /></Field>
-      <button className="mh-button" disabled={busy || !draft.trim()}>Invia</button>
+    {data.canSend ? <form className="mh-chat-compose" onSubmit={send}>
+      <textarea aria-label="Messaggio" placeholder="Scrivi un messaggio…" rows={1} maxLength={1000} value={draft} onChange={(event) => setDraft(event.target.value)} disabled={busy} required />
+      <button className="mh-button" aria-label="Invia messaggio" disabled={busy || !draft.trim()}><Send size={18} aria-hidden="true" /></button>
       {sendError && <p role="alert">{sendError}</p>}
     </form> : <p>Al momento questa conversazione è disponibile in sola lettura.</p>}
   </section>;
