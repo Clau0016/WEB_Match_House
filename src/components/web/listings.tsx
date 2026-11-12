@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { Field } from "./common";
 import { checked, db, errorText, euro, uploadFiles } from "./data";
 import { MediaImage } from "./media";
+import { LocationMap } from "./location-map";
+import { coordinates, locationFor, type MapPoint } from "./map-locations";
 
 export const types = ["Stanza singola", "Stanza doppia", "Appartamento"];
 export const amenities = ["Letto", "Armadio", "Scrivania", "Cucina attrezzata", "Frigorifero", "Lavatrice", "Lavastoviglie", "Forno", "Aria condizionata", "Riscaldamento", "Wi-Fi"];
@@ -49,6 +51,12 @@ export function ListingFacts({ listing }: { listing: Listing }) {
 export function ListingForm({ userId, listing, onSaved }: { userId: string; listing?: Listing; onSaved: () => void }) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
+  const [pin, setPin] = useState(() => coordinates(listing?.details["map_lat"], listing?.details["map_lng"]));
+  const [picker, setPicker] = useState<{ center: MapPoint | undefined; query: string }>();
+  const pickerPins = useMemo(() => {
+    const point = pin ?? picker?.center;
+    return point ? [{ id: "listing", point, label: pin ? "Posizione dell’annuncio" : "Zona indicativa" }] : [];
+  }, [pin, picker]);
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -73,7 +81,11 @@ export function ListingForm({ userId, listing, onSaved }: { userId: string; list
         owner_id: userId, title: value("title"), city: value("city"), area: value("area"), address: value("address"),
         type: value("type"), rent: Number(value("rent")), size: Number(value("size")), rooms: Number(value("rooms")),
         roommates: Number(value("roommates")), available: value("available") || null, amenities: form.getAll("amenities"),
-        details: Object.fromEntries([...details["map"](([key]) => [key, value(key)]), ["description", value("description")]]),
+        details: {
+          ...Object.fromEntries(details.map(([key]) => [key, value(key)])),
+          description: value("description"), region: value("region"),
+          ...(pin ? { map_lat: pin[0].toFixed(5), map_lng: pin[1].toFixed(5) } : {}),
+        },
         photos: [...oldPhotos, ...photos], documents: [...oldDocs, ...documents], status: pending ? "pending" : "draft",
       };
       const table = db.from("mh_listings");
@@ -90,10 +102,32 @@ export function ListingForm({ userId, listing, onSaved }: { userId: string; list
   }
   return <form className="mh-panel mh-form mh-section" onSubmit={save}><h2>{listing ? "Modifica annuncio" : "Nuovo annuncio"}</h2>
     <p className="mh-muted">Salva una bozza o allega foto e documenti per richiedere la verifica. Gli annunci compaiono in ricerca dopo l’approvazione.</p>
-    <div className="mh-grid">{base.map(([key, label, type]) => <Field key={key} label={label}><input name={key} type={type} min={type === "number" ? 0 : undefined} maxLength={200} defaultValue={String(listing?.[key as keyof Listing] ?? "")} required={key === "title"} /></Field>)}
+    <div className="mh-grid">{base.map(([key, label, type]) => <Field key={key} label={label}><input name={key} type={type} min={type === "number" ? 0 : undefined} maxLength={200} defaultValue={String(listing?.[key as keyof Listing] ?? "")} required={key === "title"} onChange={() => {
+      if (key === "city" || key === "area" || key === "address") { setPin(undefined); setPicker(undefined); }
+    }} /></Field>)}
+      <Field label="Regione (facoltativa)"><input name="region" maxLength={80} defaultValue={listing?.details["region"] ?? ""} /></Field>
       <Field label="Tipologia"><select name="type" defaultValue={listing?.type ?? types[0]}>{types.map((type) => <option key={type}>{type}</option>)}</select></Field>
       {details["map"](([key, label, type]) => <Field key={key} label={label}>{type === "select" ? <select name={key} defaultValue={listing?.details[key] ?? ""}><option value="">Seleziona</option><option>Sì</option><option>No</option>{key === "registered" && <option>Non applicabile</option>}</select> : <input name={key} type={type} min={0} maxLength={300} defaultValue={listing?.details[key]} />}</Field>)}
     </div>
+    <div className="mh-actions">
+      <button type="button" className="mh-button mh-outline" aria-expanded={Boolean(picker)} onClick={(event) => {
+        const form = event.currentTarget.form;
+        if (picker) { setPicker(undefined); return; }
+        if (!form) return;
+        const fields = new FormData(form);
+        const city = String(fields.get("city") ?? "");
+        const area = String(fields.get("area") ?? "");
+        const query = [fields.get("address"), city, fields.get("region"), "Italia"].filter(Boolean).join(", ");
+        setPicker({ center: locationFor(city, area).point, query });
+      }}>{picker ? "Chiudi mappa" : "Posiziona l’annuncio sulla mappa"}</button>
+      {pin && <button className="mh-text-link" type="button" onClick={() => setPin(undefined)}>Rimuovi posizione</button>}
+    </div>
+    {picker && <div className="mh-map-picker">
+      <p>Ingrandisci la mappa e seleziona il punto da pubblicare con l’annuncio.</p>
+      <a className="mh-text-link" target="_blank" rel="noreferrer" href={"https://www.openstreetmap.org/search?query=" + encodeURIComponent(picker.query)}>Cerca l’indirizzo su OpenStreetMap</a>
+      <LocationMap pins={pickerPins} onPick={(point) => setPin(coordinates(String(point[0]), String(point[1])))} />
+      {pin && <p role="status">Posizione selezionata.</p>}
+    </div>}
     <fieldset><legend>Arredamento e dotazioni</legend><div className="mh-options">{amenities.map((name) => <label className="mh-check" key={name}><input type="checkbox" name="amenities" value={name} defaultChecked={listing?.amenities.includes(name)} />{name}</label>)}</div></fieldset>
     <Field label="Descrizione"><textarea name="description" maxLength={2000} defaultValue={listing?.details["description"]} /></Field>
     <Field label="Fotografie (la prima sarà quella principale)"><input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple /></Field>

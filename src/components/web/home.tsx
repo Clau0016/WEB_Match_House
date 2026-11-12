@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useLoad } from "./common";
 import { checked, db } from "./data";
 import { ListingCard, type Listing } from "./listings";
+import { HousingMap } from "./housing-map";
 
 const services = [
   { title: "Trova la tua prossima casa.", text: "Scopri stanze e appartamenti in affitto attraverso annunci trasparenti, verificati e corredati di tutte le informazioni necessarie.", action: "Esplora gli annunci", to: "/trova-casa", icon: KeyRound },
@@ -36,6 +37,7 @@ export function Home() {
       </div>
       <div className="mh-hero-photo"><img src="/seed/room-1.jpg" alt="Interno luminoso di una casa" fetchPriority="high" /></div>
     </section>
+    <HousingMap />
     <section className="mh-wrap mh-services" aria-label="I servizi Match House">
       {services.map(({ title, text, action, to, icon: Icon }) => <Link to={to} className="mh-service" key={to}>
         <span className="mh-service-icon"><Icon size={22} /></span>

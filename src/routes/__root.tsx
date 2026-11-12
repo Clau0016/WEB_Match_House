@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import webCss from "../components/web/web.css?url";
+import mapCss from "leaflet/dist/leaflet.css?url";
 import { Layout } from "../components/web/layout";
 
 function NotFoundComponent() {
@@ -91,6 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "stylesheet", href: webCss },
+      { rel: "stylesheet", href: mapCss },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" },
     ],

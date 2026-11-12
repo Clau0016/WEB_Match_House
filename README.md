@@ -15,6 +15,8 @@ La specifica principale è il documento **match house mvp sitoweb.docx**. Il sit
 
 Per abilitare le conversazioni tra coinquilini, esegui [database/chat.sql](database/chat.sql) e poi [database/chat-unread.sql](database/chat-unread.sql) nel SQL Editor dopo lo schema MVP. Le migrazioni recuperano le richieste di contatto esistenti, abilitano gli aggiornamenti tramite Supabase Realtime e aggiungono il conteggio dei non letti.
 
+Per la vista Coinquilini della mappa, esegui [database/map.sql](database/map.sql) dopo lo schema MVP. La mappa usa Leaflet e le tessere OpenStreetMap. `VITE_MAP_TILE_URL` consente di configurare un server di tessere compatibile con la stessa attribuzione. [Condizioni d’uso delle tessere OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/)
+
 ## Amministrazione
 
 Dopo aver registrato e verificato il primo account amministratore, aggiungi il suo UUID alla tabella `public.mh_admins` dal SQL Editor. L’area amministrativa è disponibile su `/amministrazione`. L’approvazione di un annuncio lo rende visibile nella ricerca pubblica. Una modifica del proprietario riporta l’annuncio in bozza o in verifica, secondo l’azione scelta.

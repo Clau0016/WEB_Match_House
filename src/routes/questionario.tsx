@@ -24,6 +24,7 @@ function Wizard({ initial, userId }: { initial: Draft | null; userId: string }) 
   const [step, setStep] = useState(Math.min(initial?.step ?? 0, questions.length));
   const [photo, setPhoto] = useState(initial?.photo ?? null);
   const [visible, setVisible] = useState(initial?.visible ?? false);
+  const [mapVisible, setMapVisible] = useState(initial?.answers["show_on_map"] === "true");
   const [details, setDetails] = useState(initial?.show_details ?? false);
   const [finished, setFinished] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -43,7 +44,8 @@ function Wizard({ initial, userId }: { initial: Draft | null; userId: string }) 
       }
       if (file?.size) [uploaded] = await uploadFiles("mh-photos", userId, [file]);
       await checked(db.from("mh_questionnaires").upsert({
-        user_id: userId, answers, step: next, completed: publish, visible: publish && visible, show_details: details, photo: uploaded ?? photo,
+        user_id: userId, answers: { ...answers, show_on_map: String(visible && mapVisible) }, step: next,
+        completed: publish, visible: publish && visible, show_details: details, photo: uploaded ?? photo,
       }));
       if (uploaded) {
         if (photo) await db.storage.from("mh-photos").remove([photo]);
@@ -71,6 +73,7 @@ function Wizard({ initial, userId }: { initial: Draft | null; userId: string }) 
       {photo && <MediaImage className="mh-avatar" path={photo} alt="La tua foto profilo" />}
       <Field label="Foto profilo (facoltativa)"><input type="file" name="photo" accept="image/jpeg,image/png,image/webp" /></Field>
       <label className="mh-check"><input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} /> Mostra il profilo nei risultati dei coinquilini</label>
+      {visible && <label className="mh-check"><input type="checkbox" checked={mapVisible} onChange={(e) => setMapVisible(e.target.checked)} /> Includi la zona in cui cerco casa nei conteggi della mappa</label>}
       <label className="mh-check"><input type="checkbox" checked={details} onChange={(e) => setDetails(e.target.checked)} /> Mostra abitudini e preferenze nella scheda del profilo</label>
       <div className="mh-actions"><button className="mh-button mh-outline" type="button" disabled={busy} onClick={() => setStep(step - 1)}>Indietro</button><button className="mh-button" disabled={busy}>Conferma questionario</button></div>
     </form>}
