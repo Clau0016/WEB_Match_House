@@ -48,7 +48,9 @@ export function ListingFacts({ listing }: { listing: Listing }) {
     <p className="mh-preserve">{listing.details["description"]}</p></>;
 }
 
-export function ListingForm({ userId, listing, onSaved }: { userId: string; listing?: Listing; onSaved: () => void }) {
+export function ListingForm({ userId, listing, defaults, onSaved }: {
+  userId: string; listing?: Listing; defaults?: Partial<Pick<Listing, "city" | "area" | "address">>; onSaved: () => void;
+}) {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [pin, setPin] = useState(() => coordinates(listing?.details["map_lat"], listing?.details["map_lng"]));
@@ -89,7 +91,8 @@ export function ListingForm({ userId, listing, onSaved }: { userId: string; list
         photos: [...oldPhotos, ...photos], documents: [...oldDocs, ...documents], status: pending ? "pending" : "draft",
       };
       const table = db.from("mh_listings");
-      await checked(listing ? table.update(values).eq("id", listing.id).select("id").single() : table.insert(values));
+      if (listing) await checked(table.update(values).eq("id", listing.id).select("id").single());
+      else await checked(table.insert(values));
     } catch (error) {
       if (photos.length) await db.storage.from("mh-photos").remove(photos);
       if (documents.length) await db.storage.from("mh-documents").remove(documents);
@@ -102,7 +105,7 @@ export function ListingForm({ userId, listing, onSaved }: { userId: string; list
   }
   return <form className="mh-panel mh-form mh-section" onSubmit={save}><h2>{listing ? "Modifica annuncio" : "Nuovo annuncio"}</h2>
     <p className="mh-muted">Salva una bozza o allega foto e documenti per richiedere la verifica. Gli annunci compaiono in ricerca dopo l’approvazione.</p>
-    <div className="mh-grid">{base.map(([key, label, type]) => <Field key={key} label={label}><input name={key} type={type} min={type === "number" ? 0 : undefined} maxLength={200} defaultValue={String(listing?.[key as keyof Listing] ?? "")} required={key === "title"} onChange={() => {
+    <div className="mh-grid">{base.map(([key, label, type]) => <Field key={key} label={label}><input name={key} type={type} min={type === "number" ? 0 : undefined} maxLength={200} defaultValue={String(listing?.[key as keyof Listing] ?? (key === "city" || key === "area" || key === "address" ? defaults?.[key] : "") ?? "")} required={key === "title"} onChange={() => {
       if (key === "city" || key === "area" || key === "address") { setPin(undefined); setPicker(undefined); }
     }} /></Field>)}
       <Field label="Regione (facoltativa)"><input name="region" maxLength={80} defaultValue={listing?.details["region"] ?? ""} /></Field>

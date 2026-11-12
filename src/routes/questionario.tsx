@@ -11,16 +11,22 @@ type Draft = { answers: Answers; step: number; completed: boolean; visible: bool
 function Questionnaire() {
   const { session, loading } = useSession();
   const user = session?.user;
+  const registrationCity = String(user?.user_metadata["housing_city"] ?? "");
+  const rawNeighborhoods: unknown = user?.user_metadata["housing_neighborhoods"];
+  const registrationAreas = Array.isArray(rawNeighborhoods)
+    ? rawNeighborhoods.filter((item): item is string => typeof item === "string").slice(0, 5) : [];
   const state = useLoad(async () => user && verified(session)
     ? await checked(db.from("mh_questionnaires").select("*").eq("user_id", user.id).maybeSingle()) as Draft | null
     : null, verified(session) ? user!.id : "");
   return <div className="mh-wrap mh-page mh-narrow"><PageTitle title="Questionario di compatibilità" />
-    {!verified(session) ? <RequireAccount loading={loading} signedIn={Boolean(session)} /> : state.error ? <Empty>{state.error}</Empty> : state.data === undefined ? <Empty>Caricamento…</Empty> : <Wizard key={user!.id} userId={user!.id} initial={state.data} />}
+    {!verified(session) ? <RequireAccount loading={loading} signedIn={Boolean(session)} /> : state.error ? <Empty>{state.error}</Empty> : state.data === undefined ? <Empty>Caricamento…</Empty> : <Wizard key={user!.id} userId={user!.id} initial={state.data} registrationCity={registrationCity} registrationAreas={registrationAreas} />}
   </div>;
 }
 
-function Wizard({ initial, userId }: { initial: Draft | null; userId: string }) {
-  const [answers, setAnswers] = useState<Answers>(initial?.answers ?? {});
+function Wizard({ initial, userId, registrationCity, registrationAreas }: {
+  initial: Draft | null; userId: string; registrationCity: string; registrationAreas: string[];
+}) {
+  const [answers, setAnswers] = useState<Answers>(initial?.answers ?? { city: registrationCity, area: registrationAreas[0] ?? "" });
   const [step, setStep] = useState(Math.min(initial?.step ?? 0, questions.length));
   const [photo, setPhoto] = useState(initial?.photo ?? null);
   const [visible, setVisible] = useState(initial?.visible ?? false);
@@ -43,8 +49,11 @@ function Wizard({ initial, userId }: { initial: Draft | null; userId: string }) 
         throw new Error("Il budget massimo deve essere almeno pari al minimo.");
       }
       if (file?.size) [uploaded] = await uploadFiles("mh-photos", userId, [file]);
+      const sameCity = String(answers["city"] ?? "").trim().localeCompare(registrationCity, "it", { sensitivity: "base" }) === 0;
+      const primary = String(answers["area"] ?? "").trim();
+      const preferredAreas = [...new Set([primary, ...(sameCity ? registrationAreas : [])].filter(Boolean))].slice(0, 5);
       await checked(db.from("mh_questionnaires").upsert({
-        user_id: userId, answers: { ...answers, show_on_map: String(visible && mapVisible) }, step: next,
+        user_id: userId, answers: { ...answers, preferred_areas: preferredAreas, show_on_map: String(visible && mapVisible) }, step: next,
         completed: publish, visible: publish && visible, show_details: details, photo: uploaded ?? photo,
       }));
       if (uploaded) {

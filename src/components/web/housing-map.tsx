@@ -6,7 +6,7 @@ import { checked, db, euro, useSession, verified } from "./data";
 import { LocationMap, type MapPinData } from "./location-map";
 import { coordinates, locationFor, type MapPoint } from "./map-locations";
 
-type HouseRow = { id: string; title: string; city: string; area: string; rent: number; status: string; details: Record<string, string> };
+type HouseRow = { id: string; title: string; city: string; area: string; rent: number; status: string; type: string; size: number; details: Record<string, string> };
 type ZoneRow = { city: string; area: string; seekers: number };
 type Entry = {
   id: string;
@@ -18,6 +18,7 @@ type Entry = {
   precision: string;
   count: number;
   rent?: number;
+  summary?: string;
   demo?: boolean;
 };
 
@@ -29,11 +30,12 @@ export function HousingMap() {
   const userKey = verified(session) ? session!.user.id : "guest";
   const { data, error } = useLoad(async (): Promise<Entry[]> => {
     if (mode === "houses") {
-      const rows = await checked(db.from("mh_public_listings").select("id,title,city,area,rent,status,details").order("city").order("id")) as HouseRow[];
+      const rows = await checked(db.from("mh_public_listings").select("id,title,city,area,rent,status,type,size,details").order("city").order("id")) as HouseRow[];
       return rows.map((row) => {
         const location = locationFor(row.city, row.area);
         const exact = coordinates(row.details["map_lat"], row.details["map_lng"]);
-        return { ...row, count: 1, demo: row.status === "demo", region: row.details["region"] || location.region,
+        return { ...row, summary: [row.area, row.city, row.type, row.size ? row.size + " m²" : ""].filter(Boolean).join(" · "),
+          count: 1, demo: row.status === "demo", region: row.details["region"] || location.region,
           point: exact ?? location.point, precision: exact ? "Indirizzo" : location.neighborhood ? "Zona indicativa" : "Centro città" };
       });
     }
@@ -53,11 +55,15 @@ export function HousingMap() {
       if (!entry.point) continue;
       const id = entry.point.join(",");
       const group = result.get(id);
+      const listing = entry.rent != null
+        ? { id: entry.id, title: entry.title, summary: entry.summary ?? entry.city, price: euro(entry.rent) + "/mese" } : null;
       if (group) {
         group.entries.push(entry);
         group.pin.count = (group.pin.count ?? 0) + entry.count;
+        if (listing) group.pin.listings?.push(listing);
       } else {
-        result.set(id, { pin: { id, point: entry.point, label: [entry.city, entry.area].filter(Boolean).join(" · "), count: entry.count }, entries: [entry] });
+        result.set(id, { pin: { id, point: entry.point, label: [entry.city, entry.area].filter(Boolean).join(" · "), count: entry.count,
+          ...(listing ? { listings: [listing] } : {}) }, entries: [entry] });
       }
     }
     return result;

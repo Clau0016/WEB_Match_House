@@ -10,14 +10,29 @@ as $$
       'Pisa','Siena','Perugia','Ancona','Urbino','Roma','Latina','Pescara','L’Aquila','Campobasso','Napoli',
       'Salerno','Bari','Lecce','Potenza','Catanzaro','Cosenza','Palermo','Catania','Messina','Cagliari','Sassari']) as name
   ), zones(city, area) as (
-    values ('Milano','Città Studi'), ('Bologna','Bolognina'), ('Torino','San Salvario'), ('Roma','Pigneto')
+    values ('Milano','Città Studi'), ('Milano','Navigli'), ('Milano','Isola'), ('Milano','Porta Romana'),
+      ('Bologna','Bolognina'), ('Bologna','San Donato'), ('Bologna','Saragozza'),
+      ('Torino','San Salvario'), ('Torino','Crocetta'), ('Torino','Vanchiglia'),
+      ('Roma','Pigneto'), ('Roma','San Lorenzo'), ('Roma','Trastevere'), ('Roma','Testaccio')
   )
-  select cities.name, coalesce(zones.area, ''), count(*)
+  select cities.name, coalesce(zones.area, ''), count(distinct q.user_id)
   from public.mh_questionnaires q
   join public.mh_members m on m.user_id = q.user_id
   join auth.users u on u.id = q.user_id
   join cities on lower(trim(q.answers->>'city')) = lower(cities.name)
-  left join zones on zones.city = cities.name and lower(trim(q.answers->>'area')) = lower(zones.area)
+  left join lateral (
+    select zone.area from zones zone
+    where zone.city = cities.name and (
+      lower(trim(q.answers->>'area')) = lower(zone.area)
+      or exists (
+        select 1 from jsonb_array_elements_text(
+          case when jsonb_typeof(q.answers->'preferred_areas') = 'array'
+            then q.answers->'preferred_areas' else '[]'::jsonb end
+        ) with ordinality as preference(name, position)
+        where preference.position <= 5 and lower(trim(preference.name)) = lower(zone.area)
+      )
+    )
+  ) zones on true
   where q.completed and q.visible and m.active and u.email_confirmed_at is not null
     and q.user_id is distinct from auth.uid()
     and (

@@ -29,6 +29,16 @@ const zones: Record<string, MapPoint> = {
   "bologna/bolognina": [44.5181, 11.347],
   "torino/san salvario": [45.0513, 7.6818],
   "roma/pigneto": [41.8893, 12.5324],
+  "milano/navigli": [45.4499, 9.1741],
+  "milano/isola": [45.487, 9.1877],
+  "milano/porta romana": [45.451, 9.2022],
+  "bologna/san donato": [44.5087, 11.368],
+  "bologna/saragozza": [44.4888, 11.3228],
+  "torino/crocetta": [45.0553, 7.665],
+  "torino/vanchiglia": [45.0705, 7.7072],
+  "roma/san lorenzo": [41.8984, 12.5154],
+  "roma/trastevere": [41.8886, 12.4692],
+  "roma/testaccio": [41.8787, 12.4759],
 };
 
 function normalize(value: string) {
@@ -40,6 +50,14 @@ export function locationFor(city: string, area: string) {
   const center = cities[key];
   const neighborhood = zones[key + "/" + normalize(area)];
   return { point: neighborhood ?? center?.[0], region: center?.[1] ?? "", neighborhood: Boolean(neighborhood) };
+}
+
+export function neighborhoodsFor(city: string) {
+  const prefix = normalize(city) + "/";
+  return Object.keys(zones).filter((key) => key.startsWith(prefix)).map((key) => {
+    const name = key.slice(prefix.length);
+    return name === "citta studi" ? "Città Studi" : name.replace(/\b\w/g, (letter) => letter.toUpperCase());
+  });
 }
 
 export function coordinates(latitude?: string, longitude?: string): MapPoint | undefined {

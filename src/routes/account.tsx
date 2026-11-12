@@ -84,7 +84,11 @@ function Account() {
           <div className="mh-actions"><Link className="mh-button mh-outline" to="/questionario">Questionario e visibilità</Link><Link className="mh-button mh-outline" to="/risultati">Risultati di compatibilità</Link>{state.data.questionnaire?.visible && <button className="mh-button mh-outline" disabled={busy} onClick={() => run(async () => { await checked(db.from("mh_questionnaires").update({ visible: false }).eq("user_id", user.id)); reload(); })}>Nascondi il profilo</button>}</div>
         </section>
         <section id="annunci" className="mh-panel mh-section"><div className="mh-page-heading"><h2>I miei annunci</h2><button className="mh-button" onClick={() => setEditing(editing === "new" ? null : "new")}>{editing === "new" ? "Chiudi modulo" : "Crea annuncio"}</button></div>
-          {editing === "new" && <ListingForm key="new" userId={user.id} onSaved={reload} />}
+          {editing === "new" && <ListingForm key="new" userId={user.id} defaults={{
+            city: String(user.user_metadata["property_city"] ?? ""),
+            area: String(user.user_metadata["property_area"] ?? ""),
+            address: String(user.user_metadata["property_address"] ?? ""),
+          }} onSaved={reload} />}
           {!state.data.listings.length && <p className="mh-muted">Non hai ancora creato annunci.</p>}
           {state.data.listings.map((listing) => <article className="mh-account-item" key={listing.id}>
             <h3>{listing.title}</h3><p>{labels[listing.status]}{listing.review_note ? ` · ${listing.review_note}` : ""}</p>

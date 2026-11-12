@@ -69,6 +69,10 @@
 .mh-map-focus { display: block; font-size: .86rem; }
 .mh-map-marker { display: grid; place-items: center; border: 2px solid white; border-radius: 50%; color: white; background: #315742; box-shadow: 0 2px 7px #19211d55; font-weight: 800; }
 .mh-map-marker:focus-visible { outline: 3px solid #183529; }
+.mh-map-popup article { display: grid; gap: 4px; padding-block: 8px; }
+.mh-map-popup article + article { border-top: 1px solid #e1e7de; }
+.mh-map-popup article p { margin: 0; }
+.mh-map-popup article a { color: #315742; font-weight: 700; }
 .mh-map-picker .mh-map-surface { height: 300px; border-radius: 10px; }
 .mh-map-picker .mh-map-canvas { margin-top: 10px; cursor: crosshair; }
 @media (max-width: 760px) {

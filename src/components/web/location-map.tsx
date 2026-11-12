@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import type { Map as LeafletMap } from "leaflet";
 import type { MapPoint } from "./map-locations";
 
-export type MapPinData = { id: string; point: MapPoint; label: string; count?: number };
+export type MapPinData = {
+  id: string; point: MapPoint; label: string; count?: number;
+  listings?: { id: string; title: string; summary: string; price: string }[];
+};
 
 export function LocationMap({ pins, selected, onSelect, onPick }: {
   pins: MapPinData[];
@@ -43,12 +46,32 @@ export function LocationMap({ pins, selected, onSelect, onPick }: {
     for (const pin of pins) {
       const icon = library.divIcon({
         className: "mh-map-marker",
-        html: pin.count && pin.count > 1 ? String(pin.count) : "●",
+        html: pin.listings?.length ? "⌂" : pin.count && pin.count > 1 ? String(pin.count) : "●",
         iconSize: [34, 34],
         iconAnchor: [17, 17],
       });
-      library.marker(pin.point, { icon, title: pin.label, alt: pin.label })
+      const marker = library.marker(pin.point, { icon, title: pin.label, alt: pin.label })
         .on("click", () => callbacks.current.onSelect?.(pin.id)).addTo(markers);
+      if (pin.listings?.length) {
+        const popup = document.createElement("div");
+        popup.className = "mh-map-popup";
+        for (const listing of pin.listings) {
+          const item = document.createElement("article");
+          const title = document.createElement("a");
+          title.href = "/annuncio/" + encodeURIComponent(listing.id);
+          title.textContent = listing.title;
+          const details = document.createElement("p");
+          details.textContent = listing.summary;
+          const price = document.createElement("strong");
+          price.textContent = listing.price;
+          const open = document.createElement("a");
+          open.href = title.href;
+          open.textContent = "Apri annuncio →";
+          item.append(title, details, price, open);
+          popup.append(item);
+        }
+        marker.bindPopup(popup, { maxHeight: 280, minWidth: 195 });
+      }
     }
     if (pins.length === 1 && pins[0]) map.setView(pins[0].point, 14);
     else if (pins.length > 1) map.fitBounds(library.latLngBounds(pins.map((pin) => pin.point)), { padding: [30, 30], maxZoom: 14 });
@@ -57,7 +80,7 @@ export function LocationMap({ pins, selected, onSelect, onPick }: {
 
   useEffect(() => {
     const pin = pins.find((item) => item.id === selected);
-    if (engine && pin) engine.map.setView(pin.point, 14);
+    if (engine && pin) engine.map.setView(pin.point, Math.max(engine.map.getZoom(), 14));
   }, [engine, pins, selected]);
 
   return <div className="mh-map-canvas">
