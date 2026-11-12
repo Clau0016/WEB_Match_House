@@ -54,6 +54,14 @@
 .mh-web .mh-home-listings h2[id] { font-family: "Instrument Serif", Georgia, serif; font-size: clamp(2.1rem, 4vw, 3.5rem); font-weight: 400; margin: 0; }
 .mh-result-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-block: 18px 10px; }
 .mh-result-bar .mh-count { margin: 0; }
+.mh-chat-list { display: grid; gap: 8px; }
+.mh-chat-list a { display: grid; padding: 12px 14px; border: 1px solid var(--mh-line); border-radius: 10px; }
+.mh-chat-list a:hover { background: #eef3ec; }
+.mh-chat-list span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mh-muted); }
+.mh-chat-log { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; max-height: min(50vh, 34rem); overflow-y: auto; }
+.mh-chat-message { max-width: 87%; padding: 9px 13px; border-radius: 12px; background: #f1f2ee; overflow-wrap: anywhere; }
+.mh-chat-mine { align-self: flex-end; background: #e4efe2; }
+.mh-chat-message small { color: var(--mh-muted); }
 .mh-listing-card { transition: border-color .18s, box-shadow .18s; }
 .mh-listing-card:hover { box-shadow: 0 10px 25px #19211d12; }
 @media (max-width: 760px) {

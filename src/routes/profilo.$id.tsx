@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Empty, Field, PageTitle, RequireAccount, useLoad } from "@/components/web/common";
 import { checked, db, errorText, euro, useSession, verified } from "@/components/web/data";
@@ -9,19 +9,19 @@ import type { Ranked } from "./risultati";
 export const Route = createFileRoute("/profilo/$id")({ component: Profile });
 function Profile() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const { session, loading } = useSession();
   const canRead = verified(session);
   const state = useLoad(async () => canRead ? (await checked(db.rpc("mh_rank_roommates", { target: id })) as Ranked[])[0] ?? null : null, canRead ? session!.user.id + id : "");
   const [status, setStatus] = useState("");
   const [reportStatus, setReportStatus] = useState("");
   const [busy, setBusy] = useState(false);
-  async function send(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function openChat() {
     setBusy(true);
     setStatus("");
     try {
-      await checked(db.from("mh_contacts").insert({ sender_id: session!.user.id, recipient_id: id, message: new FormData(event.currentTarget).get("message") }));
-      setStatus("Richiesta di contatto inviata.");
+      await checked(db.rpc("mh_open_chat", { person: id }));
+      await navigate({ to: "/coinquilini/chat/$id", params: { id } });
     } catch (error) { setStatus(errorText(error)); }
     finally { setBusy(false); }
   }
@@ -43,7 +43,7 @@ function Profile() {
         <p>Budget {euro(Number(person.answers["minimum"]))}–{euro(Number(person.answers["maximum"]))}/mese. Ingresso dal {person.answers["move"]}.</p>
         {person.show_details && <dl className="mh-facts">{questions.filter(({ id: key }) => ["schedule","clean","noise","social","interests","area","stay","languages","home","remote","chores","guests","smoke","pets","sports"].includes(key)).map(({ id: key, label }) => <div key={key}><dt>{label}</dt><dd>{Array.isArray(person.answers[key]) ? person.answers[key].join(", ") : person.answers[key] || "—"}</dd></div>)}</dl>}
       </div>
-      {isDemoProfile(id) ? <p className="mh-panel mh-section">Questo profilo è fittizio e non riceve messaggi.</p> : <form className="mh-panel mh-section mh-form" onSubmit={send}><h2>Contatta questa persona</h2><Field label="Messaggio"><textarea name="message" maxLength={1000} required /></Field><button className="mh-button" disabled={busy || status === "Richiesta di contatto inviata."}>Invia richiesta</button>{status && <p role="status">{status}</p>}</form>}
+      {isDemoProfile(id) ? <p className="mh-panel mh-section">Questo profilo è fittizio e non riceve messaggi.</p> : <div className="mh-panel mh-section"><button type="button" className="mh-button" onClick={openChat} disabled={busy}>Avvia chat</button>{status && <p role="alert">{status}</p>}</div>}
       <details className="mh-panel mh-section"><summary>Segnala profilo</summary><form className="mh-form" onSubmit={report}><Field label="Motivo"><textarea name="reason" required maxLength={1000} /></Field><button className="mh-button mh-outline" disabled={busy}>Invia segnalazione</button>{reportStatus && <p role="status">{reportStatus}</p>}</form></details>
     </>}
   </div>;

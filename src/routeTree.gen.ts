@@ -21,6 +21,7 @@ import { Route as RisultatiRouteImport } from './routes/risultati'
 import { Route as TrovaCasaRouteImport } from './routes/trova-casa'
 import { Route as AnnuncioIdRouteImport } from './routes/annuncio.$id'
 import { Route as ProfiloIdRouteImport } from './routes/profilo.$id'
+import { Route as CoinquiliniChatIdRouteImport } from './routes/coinquilini_.chat.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,6 +83,11 @@ const ProfiloIdRoute = ProfiloIdRouteImport.update({
   path: '/profilo/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoinquiliniChatIdRoute = CoinquiliniChatIdRouteImport.update({
+  id: '/coinquilini_/chat/$id',
+  path: '/coinquilini/chat/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/trova-casa': typeof TrovaCasaRoute
   '/annuncio/$id': typeof AnnuncioIdRoute
   '/profilo/$id': typeof ProfiloIdRoute
+  '/coinquilini/chat/$id': typeof CoinquiliniChatIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/trova-casa': typeof TrovaCasaRoute
   '/annuncio/$id': typeof AnnuncioIdRoute
   '/profilo/$id': typeof ProfiloIdRoute
+  '/coinquilini/chat/$id': typeof CoinquiliniChatIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/trova-casa': typeof TrovaCasaRoute
   '/annuncio/$id': typeof AnnuncioIdRoute
   '/profilo/$id': typeof ProfiloIdRoute
+  '/coinquilini_/chat/$id': typeof CoinquiliniChatIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/trova-casa'
     | '/annuncio/$id'
     | '/profilo/$id'
+    | '/coinquilini/chat/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/trova-casa'
     | '/annuncio/$id'
     | '/profilo/$id'
+    | '/coinquilini/chat/$id'
   id:
     | '__root__'
     | '/'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/trova-casa'
     | '/annuncio/$id'
     | '/profilo/$id'
+    | '/coinquilini_/chat/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   TrovaCasaRoute: typeof TrovaCasaRoute
   AnnuncioIdRoute: typeof AnnuncioIdRoute
   ProfiloIdRoute: typeof ProfiloIdRoute
+  CoinquiliniChatIdRoute: typeof CoinquiliniChatIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfiloIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/coinquilini_/chat/$id': {
+      id: '/coinquilini_/chat/$id'
+      path: '/coinquilini/chat/$id'
+      fullPath: '/coinquilini/chat/$id'
+      preLoaderRoute: typeof CoinquiliniChatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrovaCasaRoute: TrovaCasaRoute,
   AnnuncioIdRoute: AnnuncioIdRoute,
   ProfiloIdRoute: ProfiloIdRoute,
+  CoinquiliniChatIdRoute: CoinquiliniChatIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

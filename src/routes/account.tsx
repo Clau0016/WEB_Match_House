@@ -6,7 +6,6 @@ import { labels, ListingForm, type Listing } from "@/components/web/listings";
 import { MediaImage } from "@/components/web/media";
 
 export const Route = createFileRoute("/account")({ component: Account });
-type Contact = { id: string; sender_id: string; recipient_id: string; message: string; created_at: string };
 function Account() {
   const { session, loading } = useSession();
   const navigate = useNavigate();
@@ -17,10 +16,9 @@ function Account() {
   const [busy, setBusy] = useState(false);
   const state = useLoad(async () => {
     if (!user || !verified(session)) return null;
-    const [listings, saved, contacts, admin, questionnaire, member, finance] = await Promise.all([
+    const [listings, saved, admin, questionnaire, member, finance] = await Promise.all([
       checked(db.from("mh_listings").select("*").eq("owner_id", user.id).order("created_at", { ascending: false })),
       checked(db.from("mh_saved").select("listing_id").eq("user_id", user.id)),
-      checked(db.from("mh_contacts").select("*").order("created_at", { ascending: false })),
       checked(db.rpc("mh_is_admin")),
       checked(db.from("mh_questionnaires").select("photo,visible,completed,answers").eq("user_id", user.id).maybeSingle()),
       checked(db.from("mh_members").select("active").eq("user_id", user.id).maybeSingle()),
@@ -28,7 +26,7 @@ function Account() {
     ]);
     const ids = (saved ?? []).map(({ listing_id }) => listing_id);
     const savedListings = ids.length ? await checked(db.from("mh_public_listings").select("id,title,city").in("id", ids)) : [];
-    return { listings: listings as Listing[], savedListings, contacts: contacts as Contact[], admin, questionnaire, member, finance };
+    return { listings: listings as Listing[], savedListings, admin, questionnaire, member, finance };
   }, `${user?.id}:${verified(session)}:${revision}`);
 
   function reload() { setEditing(null); setRevision((value) => value + 1); }
@@ -96,7 +94,7 @@ function Account() {
           </article>)}
         </section>
         <section className="mh-panel mh-section"><h2>Annunci salvati</h2>{state.data.savedListings?.length ? <ul>{state.data.savedListings.map(({ id, title, city }) => <li key={id}><Link to="/annuncio/$id" params={{ id }}>{title} · {city}</Link></li>)}</ul> : <p className="mh-muted">Non hai annunci salvati disponibili.</p>}</section>
-        <section className="mh-panel mh-section"><h2>Richieste di contatto</h2>{state.data.contacts.length ? state.data.contacts.map((contact) => <article className="mh-account-item" key={contact.id}><strong>{contact.sender_id === user.id ? "Inviata" : "Ricevuta"} · {new Date(contact.created_at).toLocaleDateString("it-IT")}</strong><p className="mh-preserve">{contact.message}</p></article>) : <p className="mh-muted">Nessuna richiesta di contatto.</p>}</section>
+        <section className="mh-panel mh-section"><h2>Conversazioni</h2><Link className="mh-text-link" to="/coinquilini" hash="conversazioni">Vai alle tue chat</Link></section>
         {!!state.data.finance?.length && <section className="mh-panel mh-section"><h2>Richieste di finanziamento</h2>{state.data.finance.map(({ id, city, message }) => <article className="mh-account-item" key={id}><strong>{city}</strong><p>{message}</p></article>)}</section>}
       </>}
     </>}
